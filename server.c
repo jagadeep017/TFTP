@@ -3,37 +3,40 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include <string.h>
+#include <unistd.h>
+#include <signal.h>
 
 
 #define IP_ADDR     "127.0.0.1"
-#define SERVER_PORT 6000
+// #define SERVER_PORT 6000
 
-//collect the file name and operation from the cilent
-
-//validtae the file if it is present(clear the data) or not(create)
-
-//send ack to cilent
-
-//collect the data from cilent and store in the file
-
-//send ack to cilent
+void signal_handler(int signum){                //to stop the server
+    printf("Server stopped\n");
+    exit(0);
+}
 
 int mode=1;
-
+//nomral(1) 512 btye, Dutect(2) byte by byte, netacii(3) include \r before \n
 
 int main(){
-    int sock_fd;
-    struct sockaddr_in server_addr, client_addr;
-    // socklen_t cli_len=sizeof(tftp_packet);
-    tftp_packet packet;
-    sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
+    int sock_fd;                                           //socket file descriptor
+
+    signal(SIGINT,signal_handler);            //to stop the server
+
+    chdir("server");
+
+    struct sockaddr_in server_addr;                     //server address
+
+    tftp_packet packet;                                 //packet to handle requests
+
+    sock_fd = socket(AF_INET, SOCK_DGRAM, 0);   //create socket
     if (sock_fd < 0) {
         perror("socket creation failed");
         exit(EXIT_FAILURE);
     }
+
+    //setting timeout of 5 sec
     struct timeval time_out;
     time_out.tv_sec = 5;
     time_out.tv_usec = 0;
@@ -41,24 +44,28 @@ int main(){
         perror("setsockopt failed");
         exit(EXIT_FAILURE);
     }
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = ntohs(SERVER_PORT);
-    server_addr.sin_addr.s_addr = inet_addr(IP_ADDR);
 
+    //set up server address and port
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = ntohs(PORT);
+    server_addr.sin_addr.s_addr = inet_addr(IP_ADDR);
+    //bind the socket
     if(bind(sock_fd,(struct sockaddr *)&server_addr,sizeof(server_addr))==-1){
         perror("bind");
         exit(EXIT_FAILURE);
     }
 
     while(1){
-        packet.opcode=0;
-        struct sockaddr_in client;
+        packet.opcode=0;                //clearing prev opcode
+        struct sockaddr_in client;      //client address
         socklen_t cli_len = sizeof(struct sockaddr_in);
+
+        //receiving request
         recvfrom(sock_fd, &packet, sizeof(tftp_packet), 0, (struct sockaddr *)&client, &cli_len);
         
-        switch(packet.opcode){
+        switch(packet.opcode){              //handling requests
             case RRQ:
-                if(!strcmp(packet.body.request.mode,"BTYE")){
+                if(!strcmp(packet.body.request.mode,"BTYE")){   //setting mode
                     mode = 2;
                 }
                 else if(!strcmp(packet.body.request.mode,"NETACII")){
@@ -67,10 +74,11 @@ int main(){
                 else{
                     mode =1;
                 }
+                //function to handle read request
                 send_ser(sock_fd, &packet, (struct sockaddr *)&client, &cli_len);
                 break;
             case WRQ:
-                if(!strcmp(packet.body.request.mode,"BTYE")){
+                if(!strcmp(packet.body.request.mode,"BTYE")){   //setting mode
                     mode = 2;
                 }
                 else if(!strcmp(packet.body.request.mode,"NETACII")){
@@ -79,14 +87,9 @@ int main(){
                 else{
                     mode = 1;
                 }
+                //function to handle write request
                 recv_ser(sock_fd, &packet, (struct sockaddr *)&client, &cli_len);
                 break;
-            // case DATA:
-            //     break;
-            // case ACK:
-            //     break;
-            // case ERROR:
-            //     break;
         }
     }
     

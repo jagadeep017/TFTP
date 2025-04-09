@@ -1,24 +1,29 @@
+#include "tftp.h"
 #include "tftp_client.h"
 #include <stdio.h>
 
-#define PORT_NUM        6000   //port number
+// #define PORT_NUM        6000   //port number
 
 char mode=1;
-//nomral 512, Dutect byte by byte, netacii include \r before \n
-char ip[18];
+//nomral(1) 512 btye, Dutect(2) byte by byte, netacii(3) include \r before \n
+
+char ip[15];                    //ip address
 
 tftp_client_t socket_c;
-//memset((void *)&socket_c,0,sizeof(tftp_client_t));
+
 int main(){
 
     char op;
-    // tftp_packet client;
+    chdir("client");
     memset(&socket_c,0,sizeof(tftp_client_t));
+
+    //create socket
     if((socket_c.sockfd = socket(AF_INET, SOCK_DGRAM, 0))<0){
         perror("socket creation failed");
         exit(EXIT_FAILURE);
     }
 
+    //setting timeout of 5 sec
     struct timeval time_out;
     time_out.tv_sec = 5;
     time_out.tv_usec = 0;
@@ -29,22 +34,23 @@ int main(){
     }
 
     while(1){
-        // memset(&client, 0, sizeof(tftp_packet));
+        //display menu
         printf("Select an operation(1 - 5)\n1. connect\n2. put\n3. get\n4. mode\n5. exit\n");
         scanf("%c",&op);
-        getchar(); // consume newline character
+        getchar();              // consume newline character
         switch(op){
             case '1':
                 //read ip address from cmd
                 printf("enter the ip address: ");
-                scanf("%15s",socket_c.server_ip);
-                getchar(); // consume newline character
+                scanf("%15s",socket_c.server_ip);   //read ip address
+                getchar();          // consume newline character
+
                 //validate ip address
                 if(validate_ip(socket_c.server_ip)==FAILURE){
                     printf("%s is an invalid ip address\n",socket_c.server_ip);
                     continue;
                 }
-                connect_to_server(&socket_c,socket_c.server_ip,PORT_NUM);
+                connect_to_server(&socket_c,socket_c.server_ip,PORT);    //connect to server
                 break;
             case '2':
                 if(socket_c.sockfd==0){
