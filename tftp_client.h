@@ -2,11 +2,6 @@
 #define TFTP_CLIENT_H
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
 #include "tftp.h"
 
 #define SUCCESS     0
@@ -19,19 +14,16 @@ typedef struct {
     char server_ip[15];
 } tftp_client_t;
 
-// Function prototypes
+// connect the sockfd to the server ip and port
 void connect_to_server(tftp_client_t *client, char *ip, int port);
+
+// handels the put operation of the client
 void put_file(tftp_client_t *client);
+
+// handels the get operation of the client
 void get_file(tftp_client_t *client);
-void disconnect(tftp_client_t *client);
-void process_command(tftp_client_t *client, char *command);
 
-
+// validate the ip address
 char validate_ip(char *ip);
-
-
-
-void send_request(int sockfd, struct sockaddr_in server_addr, char *filename, int opcode);
-void receive_request(int sockfd, struct sockaddr_in server_addr, char *filename, int opcode);
 
 #endif

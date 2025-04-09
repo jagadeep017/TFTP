@@ -41,7 +41,10 @@ typedef struct {
     } body;
 } tftp_packet;
 
+//protocal to send file using udp
 void send_file(int sockfd, struct sockaddr_in client_addr, socklen_t client_len, char *filename);
+
+//protocal to receive file using udp
 void receive_file(int sockfd, struct sockaddr_in client_addr, socklen_t client_len, char *filename);
 
 

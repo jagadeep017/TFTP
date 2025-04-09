@@ -8,8 +8,7 @@
 #include <signal.h>
 
 
-#define IP_ADDR     "127.0.0.1"
-// #define SERVER_PORT 6000
+#define IP_ADDR     "127.0.0.1"               //ip address of the server
 
 void signal_handler(int signum){                //to stop the server
     printf("Server stopped\n");
