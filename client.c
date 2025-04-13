@@ -6,13 +6,10 @@
 #include <unistd.h>
 
 char mode=1;
-//nomral(1) 512 btye, Dutect(2) byte by byte, netacii(3) include \r before \n
-
-char ip[15];                    //ip address
+//nomral(1) 512 byte, Dutect(2) byte by byte, netascii(3) include \r before \n
 
 tftp_client_t socket_c;         //to store spckfd, server_addr, server_len and server_ip
 
-char connect_flag = 1;          //flag to check if connection is established
 
 int main(){
 
@@ -54,18 +51,17 @@ int main(){
                     continue;
                 }
                 connect_to_server(&socket_c, socket_c.server_ip, PORT);  //connect to server
-                connect_flag = 0;                       //set connect_flag to 0
                 break;
             case '2':
-                if(connect_flag){                       //check if connection is not established
-                    printf("ip address unkown,please connect to a ip address\n");
+                if(socket_c.server_ip[0] == '\0'){                       //check if connection is not established
+                    printf("ip address unkown, please connect to a ip address\n");
                     break;
                 }
                 put_file(&socket_c);
                 break;
             case '3':
-                if(connect_flag){                       //check if connection is not established
-                    printf("ip address unkown,please connect to a ip address\n");
+                if(socket_c.server_ip[0] == '\0'){                       //check if connection is not established
+                    printf("ip address unkown, please connect to a ip address\n");
                     break;
                 }
                 get_file(&socket_c);

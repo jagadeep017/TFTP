@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <string.h>
+
 
 extern char mode;       //from client program or server program
 
@@ -34,9 +34,7 @@ void send_file(int sockfd, struct sockaddr_in client_addr, socklen_t client_len,
     while((read_size = read(fd, packet.body.data_packet.data, size)) > 0){  //try to size bytes from the file and store in the packet
         packet.opcode = DATA;                                   //set the opcode to data
         packet.body.data_packet.block_number = block_number;    //set the block number
-        if(read_size < size){                                   //if the read size is less than the packet data size
-            packet.body.data_packet.data[read_size] = '\0';     //null terminate the data to indecate the end of the data
-        }
+        packet.body.data_packet.block_size = read_size;
         if(netacii && *packet.body.data_packet.data == '\n'){               //if the data is in netacii mode and data is '\n'                             
             packet.body.data_packet.data[0] = '\r';                         //send '\r' first
             while(1){
@@ -77,10 +75,10 @@ void send_file(int sockfd, struct sockaddr_in client_addr, socklen_t client_len,
         }
         block_number++;                     //increment the block number
     }
-    if(size==1){                            //if size is 1 send a null character a indication of end of transfer
+    if(size==1){                            //if size is 1 send a empty data packet to indicate end of file
         packet.opcode = DATA;
         packet.body.data_packet.block_number = block_number;
-        packet.body.data_packet.data[0] = '\0';
+        packet.body.data_packet.block_size = 0;
         while(1){
             //send the packet
             sendto(sockfd, &packet, sizeof(tftp_packet), 0, (struct sockaddr *)&client_addr, client_len);
@@ -114,12 +112,12 @@ void receive_file(int sockfd, struct sockaddr_in client_addr, socklen_t client_l
     }
     tftp_packet packet,ack;                 //packet and ack buffers for data transfer
     socklen_t packet_size;                  //size of the packet
-    int block_number = 0;
+    int block_number = 0, data_size;
     while(1){
         //receive the packet
         recvfrom(sockfd, &packet, sizeof(tftp_packet), 0, (struct sockaddr *)&client_addr, &packet_size);
         if(block_number == packet.body.data_packet.block_number){       //if the block number is correct
-            if(packet.body.data_packet.data[0] == '\0'){                //if the packet is the last packet break the loop
+            if(packet.body.data_packet.block_size == 0){                //if the packet is the last packet break the loop
                 ack.opcode = ACK;
                 ack.body.ack_packet.block_number = block_number;
                 //send the ack
@@ -127,22 +125,21 @@ void receive_file(int sockfd, struct sockaddr_in client_addr, socklen_t client_l
                 break;
             }
             //write the data to file
-            write(fd,packet.body.data_packet.data,strlen(packet.body.data_packet.data)<size?strlen(packet.body.data_packet.data):size);
+            write(fd, packet.body.data_packet.data, packet.body.data_packet.block_size);
             //set ack
             ack.opcode = ACK;
             ack.body.ack_packet.block_number = block_number;
             //send the ack
             sendto(sockfd, &ack, sizeof(tftp_packet), 0, (struct sockaddr *)&client_addr, client_len);
             block_number++;                     //increment the block number
-            if(strlen(packet.body.data_packet.data)<size){      //if the packet is the last packet break the loop
-                close(fd);                                          //close the file and return
-                return;
+            if(packet.body.data_packet.block_size < size){      //if the packet is the last packet break the loop
+                break;
             }
         }
         else{                       //if not the correct block number
             ack.opcode = ERROR;
             ack.body.error_packet.error_code = block_number;
-            sprintf(ack.body.error_packet.error_msg,"ERROR : block number %d not recieved\n",block_number);
+            sprintf(ack.body.error_packet.error_msg,"ERROR : block number %d not recieved\n", block_number);
             //send error
             sendto(sockfd, &ack, sizeof(tftp_packet), 0, (struct sockaddr *)&client_addr, client_len);
         }

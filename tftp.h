@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <arpa/inet.h>
+#include <sys/types.h>
 
 #define PORT 6969
 #define BUFFER_SIZE 516  // TFTP data packet size (512 bytes data + 4 bytes header)
@@ -28,14 +29,15 @@ typedef struct {
             char mode[8];  // Typically "octet"
         } request;  // RRQ and WRQ
         struct {
-            uint16_t block_number;
+            uint32_t block_number;
+            uint16_t block_size;
             char data[512];
         } data_packet; // DATA
         struct {
-            uint16_t block_number;
+            uint32_t block_number;
         } ack_packet; // ACK
         struct {
-            uint16_t error_code;
+            uint32_t error_code;
             char error_msg[512];
         } error_packet; // ERROR
     } body;

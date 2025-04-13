@@ -11,12 +11,12 @@
 #define IP_ADDR     "127.0.0.1"               //ip address of the server
 
 void signal_handler(int signum){                //to stop the server
-    printf("Server stopped\n");
+    printf("\nServer stopped\n");
     exit(0);
 }
 
-int mode=1;
-//nomral(1) 512 btye, Dutect(2) byte by byte, netacii(3) include \r before \n
+int mode = 1;
+//nomral(1) 512 byte, Dutect(2) byte by byte, netascii(3) include \r before \n
 
 int main(){
     int sock_fd;                                           //socket file descriptor
@@ -49,13 +49,13 @@ int main(){
     server_addr.sin_port = ntohs(PORT);
     server_addr.sin_addr.s_addr = inet_addr(IP_ADDR);
     //bind the socket
-    if(bind(sock_fd,(struct sockaddr *)&server_addr,sizeof(server_addr))==-1){
+    if(bind(sock_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1){
         perror("bind");
         exit(EXIT_FAILURE);
     }
 
     while(1){
-        packet.opcode=0;                //clearing prev opcode
+        packet.opcode = 0;                //clearing prev opcode
         struct sockaddr_in client;      //client address
         socklen_t cli_len = sizeof(struct sockaddr_in);
 
@@ -64,23 +64,23 @@ int main(){
         
         switch(packet.opcode){              //handling requests
             case RRQ:
-                if(!strcmp(packet.body.request.mode,"BTYE")){   //setting mode
+                if(!strcmp(packet.body.request.mode, "BTYE")){   //setting mode
                     mode = 2;
                 }
-                else if(!strcmp(packet.body.request.mode,"NETACII")){
+                else if(!strcmp(packet.body.request.mode, "NETACII")){
                     mode = 3;
                 }
                 else{
-                    mode =1;
+                    mode = 1;
                 }
                 //function to handle read request
                 send_ser(sock_fd, &packet, (struct sockaddr *)&client, &cli_len);
                 break;
             case WRQ:
-                if(!strcmp(packet.body.request.mode,"BTYE")){   //setting mode
+                if(!strcmp(packet.body.request.mode, "BTYE")){   //setting mode
                     mode = 2;
                 }
-                else if(!strcmp(packet.body.request.mode,"NETACII")){
+                else if(!strcmp(packet.body.request.mode, "NETACII")){
                     mode = 3;
                 }
                 else{
@@ -91,6 +91,5 @@ int main(){
                 break;
         }
     }
-    
     return 0;
 }

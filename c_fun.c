@@ -84,7 +84,7 @@ void put_file(tftp_client_t *client){
 
     //start the file transfer
     send_file(client->sockfd, client->server_addr, client->server_len, packet.body.request.filename);
-    printf("File uploaded successfully\n");
+    printf("File uploaded successfully\n\n");
 }
 
 void get_file(tftp_client_t *client){
@@ -138,7 +138,7 @@ void get_file(tftp_client_t *client){
     }
     //start the file transfer
     receive_file(client->sockfd, client->server_addr, client->server_len, packet.body.request.filename);
-    printf("File downloaded successfully\n");
+    printf("File downloaded successfully\n\n");
 }
 
 void connect_to_server(tftp_client_t *client, char *ip, int port){
