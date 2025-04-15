@@ -25,17 +25,18 @@ where `<component>` can be `server`, `client`, `server_debug`, or `client_debug`
 
 ## Usage
 ### Server
-Open a terminal in the project directory.
+Open a terminal in the project/server directory.
 Start the server by running:
 ```bash
-./server/server
+./server
 ```
 The server listens on IP address 127.0.0.1 and port 6969 for incoming TFTP requests.
+The server will fork a new process for each incoming request, allowing multiple clients to connect simultaneously.
 ### Client
-Open a terminal in the project directory.
+Open a terminal in the project/client directory.
 Start the client by running:
 ```bash
-./client/client
+./client
 ```
 The client provides a menu with the following operations:
 Connect: Input the server IP address.
@@ -61,3 +62,4 @@ Exit: Quit the client.
 - Ensure that the server is running before attempting to use client operations.
 - The client and server executables are stored in their respective directories after compilation.
 - UDP is used for file transfers, so ensure that your environment permits UDP traffic between the client and server.
+- If either the client or server stops responding in the middle of a transfer, the transfer will be aborted after 4 retries.

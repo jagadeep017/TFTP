@@ -24,7 +24,6 @@ void send_ser(int sock_fd, tftp_packet *request,  struct sockaddr_in *client, so
 
     //start file transfer
     send_file(sock_fd, *client, *cli_len, request->body.request.filename);
-    printf("File sent successfully\n\n");
     close(fd);
 }
 
@@ -48,5 +47,4 @@ void recv_ser(int sock_fd, tftp_packet *request, struct sockaddr_in * client, so
 
     //start file transfer
     receive_file(sock_fd, *client, *cli_len, request->body.request.filename);
-    printf("File received successfully\n\n");
 }
