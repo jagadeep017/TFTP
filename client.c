@@ -14,7 +14,6 @@ tftp_client_t socket_c;         //to store spckfd, server_addr, server_len and s
 int main(){
 
     char op;
-    chdir("client");
     memset(&socket_c, 0, sizeof(tftp_client_t));    //initialize the struct with 0
 
     //create socket
@@ -58,6 +57,7 @@ int main(){
                     break;
                 }
                 put_file(&socket_c);
+                socket_c.server_addr.sin_port = htons(PORT);        //reset the port number
                 break;
             case '3':
                 if(socket_c.server_ip[0] == '\0'){                       //check if connection is not established
@@ -65,10 +65,11 @@ int main(){
                     break;
                 }
                 get_file(&socket_c);
+                socket_c.server_addr.sin_port = htons(PORT);        //reset the port number
                 break;
             case '4':
                 //print options
-                printf("Enter the mode(1-3): \n1. Normal(521 bytes)\n2. Dutect(byte by byte)\n3. Netacii(byte by byte plus \r before \n)\n");
+                printf("Enter the mode(1-3): \n1. Normal(521 bytes)\n2. Dutect(byte by byte)\n3. Netacii(byte by byte plus \\r before \\n)\n");
                 mode=getchar() - '0';       //covert char to int
                 getchar(); // consume newline character
                 if(mode < 1 || mode > 3){           //if mode is invalid set mode to normal

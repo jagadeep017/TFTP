@@ -10,6 +10,7 @@
 #define PORT 6969
 #define BUFFER_SIZE 516  // TFTP data packet size (512 bytes data + 4 bytes header)
 #define TIMEOUT_SEC 5    // Timeout in seconds
+#define RETRYS      4    // No of retrys for timeouts
 
 // TFTP OpCodes
 typedef enum {
@@ -29,15 +30,15 @@ typedef struct {
             char mode[8];  // Typically "octet"
         } request;  // RRQ and WRQ
         struct {
-            uint32_t block_number;
+            uint16_t block_number;
             uint16_t block_size;
             char data[512];
         } data_packet; // DATA
         struct {
-            uint32_t block_number;
+            uint16_t block_number;
         } ack_packet; // ACK
         struct {
-            uint32_t error_code;
+            uint16_t error_code;
             char error_msg[512];
         } error_packet; // ERROR
     } body;
@@ -49,5 +50,7 @@ void send_file(int sockfd, struct sockaddr_in client_addr, socklen_t client_len,
 //protocal to receive file using udp
 void receive_file(int sockfd, struct sockaddr_in client_addr, socklen_t client_len, char *filename);
 
+//function to send each packet
+int send_packet(int sockfd, tftp_packet *packet, tftp_packet *ack, int block_number,struct sockaddr_in client_addr, socklen_t client_len);
 
 #endif // TFTP_H

@@ -58,10 +58,10 @@ void put_file(tftp_client_t *client){
         strcpy(packet.body.request.mode, "NORMAL");
         break;
       case 2:
-        strcpy(packet.body.request.mode, "BTYE");
+        strcpy(packet.body.request.mode, "BYTE");
         break;
       case 3:
-        strcpy(packet.body.request.mode, "NETACII");
+        strcpy(packet.body.request.mode, "NETASCII");
         break;
     }
     //send the request to the server
@@ -84,7 +84,6 @@ void put_file(tftp_client_t *client){
 
     //start the file transfer
     send_file(client->sockfd, client->server_addr, client->server_len, packet.body.request.filename);
-    printf("File uploaded successfully\n\n");
 }
 
 void get_file(tftp_client_t *client){
@@ -108,15 +107,15 @@ void get_file(tftp_client_t *client){
         unlink(packet.body.request.filename);                                           //delete the existing file
     }
     packet.opcode = RRQ;
-    switch(mode){
+    switch(mode){                                       //set the mode in request packet
         case 1:
           strcpy(packet.body.request.mode, "NORMAL");
           break;
         case 2:
-          strcpy(packet.body.request.mode, "BTYE");
+          strcpy(packet.body.request.mode, "BYTE");
           break;
         case 3:
-          strcpy(packet.body.request.mode, "NETACII");
+          strcpy(packet.body.request.mode, "NETASCII");
           break;
     }
     //send the request to the server
@@ -138,7 +137,6 @@ void get_file(tftp_client_t *client){
     }
     //start the file transfer
     receive_file(client->sockfd, client->server_addr, client->server_len, packet.body.request.filename);
-    printf("File downloaded successfully\n\n");
 }
 
 void connect_to_server(tftp_client_t *client, char *ip, int port){
